@@ -1,0 +1,46 @@
+image: ubuntu:latest
+
+stages:
+  - teste
+  - sonar
+  - build
+  - deploy
+
+test-api:
+  stage: teste
+  script:
+    - uname -a
+    - free -mh
+
+test-front:
+  stage: teste
+  script:
+    - cat /etc/resolv.conf 
+
+qa-code:
+  stage: sonar
+  script:
+    - echo "$VAR01"
+    - echo "$CI_COMMIT_TAG"
+
+build-package:
+  stage: build
+  script:
+    - echo "meu primeiro pipeline" > teste.txt
+  artifacts:
+    paths:
+    - teste.txt
+
+deploy-qa:
+  stage: deploy
+  image: edsonlvalmeida/ansible:1.0
+  script:
+    - echo "Conteiner para deployr"
+    - ansible-playbook --version
+    - ansible-playbook --help
+  environment:
+    name: deploy-dev
+    url: "$DEPLOY_DEV"
+ # when: manual
+  only:
+    - master

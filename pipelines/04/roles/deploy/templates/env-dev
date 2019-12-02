@@ -1,0 +1,8 @@
+DB_HOST=<mongodb://{{ DB_NAME  }}>
+DB_NAME={{ DB_NAME  }}
+
+API_HOST={{ SERVER_API_IP }}
+API_PORT= {{ API_PORT }}
+
+SECRET_KEY_TOKEN=iishdiuh&$ikjhbds5854
+

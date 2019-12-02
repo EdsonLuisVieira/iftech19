@@ -1,0 +1,67 @@
+- name: verifica service
+  shell: docker-compose ps
+  args:
+    chdir: "{{ APP_DIR }}"
+  register: verifyservice
+  ignore_errors: True  
+
+- name: remove service latest
+  shell: docker-compose down
+  args:
+    chdir: "{{ APP_DIR }}"
+  when: verifyservice.stdout != "0"
+  ignore_errors: True
+ 
+- name: Copy file with owner and permission
+  git:
+    repo: "{{ REP_URL }}"
+    dest: "{{ APP_DIR }}"
+    force: yes
+    accept_hostkey: yes
+
+- name: copy template api
+  template:
+    src: dockerfile-api
+    dest: "{{ APP_DIR }}/Dockerfile"
+    owner: "{{ USER_SERVICE }}"
+    group: "{{ USER_SERVICE }}"
+    mode: '0644'
+
+- name: copy package
+  template:
+    src: package.json
+    dest: "{{ APP_DIR }}/package.json"
+    owner: "{{ USER_SERVICE }}"
+    group: "{{ USER_SERVICE }}"
+    mode: '0644'
+
+- name: copy template compose
+  template:
+    src: docker-compose.yml
+    dest: "{{ APP_DIR }}/docker-compose.yml"
+    owner: "{{ USER_SERVICE }}"
+    group: "{{ USER_SERVICE }}"
+    mode: '0644'
+
+  - name: Create a directory if it does not exist
+  file:
+    path: "{{ APP_DIR }}/api/env/"
+    state: directory
+    owner: "{{ USER_SERVICE }}"
+    group: "{{ USER_SERVICE }}"
+    mode: '0777'
+
+
+- name: copy env api
+  template:
+    src: env-dev
+    dest: "{{ APP_DIR }}/api/env/.env.{{ ENV_VERSION }}"
+    owner: "{{ USER_SERVICE }}"
+    group: "{{ USER_SERVICE }}"
+    mode: '0644'
+
+- name: enable environment
+  shell: docker-compose -f {{ APP_DIR }}/docker-compose.yml up -d --build
+
+- name: exec seeds
+  shell: docker exec {{ API_NAME }} npm run seeds

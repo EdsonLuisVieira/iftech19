@@ -1,0 +1,50 @@
+image: ubuntu:latest
+
+stages:
+  - teste
+  - sonar
+  - build
+  - deploy
+
+test-api:
+  stage: teste
+  script:
+    - uname -a
+    - free -mh
+
+test-front:
+  stage: teste
+  script:
+    - cat /etc/resolv.conf 
+
+qa-code:
+  stage: sonar
+  script:
+    - echo "$VAR01"
+    - echo "$CI_COMMIT_TAG"
+
+build-package:
+  stage: build
+  script:
+    - echo "meu primeiro pipeline" > teste.txt
+  artifacts:
+    paths:
+    - teste.txt
+    - index.php
+
+deploy_dev:
+  stage: deploy
+  image: edsonlvalmeida/ansible:1.1
+  script:
+    - echo "Deploy to staging server"
+    - echo "$private_key" > key && chmod 400 key
+    - eval "$(ssh-agent -s)"
+    - ssh-add key
+    - export ANSIBLE_HOST_KEY_CHECKING=False
+    - ansible-playbook -i hosts playbook.yml
+  environment:
+    name: deploy-dev
+    url: "$ENV_PROD"
+  when: manual
+  only:
+  - master

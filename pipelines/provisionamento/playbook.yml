@@ -1,0 +1,11 @@
+  - hosts: docker
+#   connection: local
+    remote_user: ubuntu
+    gather_facts: yes
+    vars:
+      USER_DOCKER: ubuntu
+      IMG_NAME: httpd
+      CTN_NAME: webserver
+      PORT: 8887
+    roles:
+      - docker

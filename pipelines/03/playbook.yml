@@ -1,0 +1,61 @@
+- hosts: lamp
+  remote_user: ubuntu
+  become: yes
+  vars:
+     passwd_new_mysql: edson
+     passwd_old_mysql: edson
+  tasks:
+
+  - name: update no servidor
+    apt:
+      update_cache: yes
+
+  - name: Upgrade no servidor
+    apt:
+      upgrade: dist
+
+  - name: Instalando Lista de pacotes
+    apt:
+      name: "{{ packages }}"
+    vars:
+      packages:
+      - php7.2
+      - php7.2-ldap
+      - php7.2-mysql
+      - php7.2-mbstring
+      - php7.2-xml
+      - php7.2-zip
+      - libapache2-mod-php7.2
+      - apache2
+      - mysql-server
+      - mysql-client
+      - python-mysqldb
+      - python-pymysql
+
+  - name: Configurando senha do Root
+    mysql_user: 
+      name: root
+      password: '{{ passwd_new_mysql }}'
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      login_user: root
+      login_password: '{{ passwd_old_mysql }}'
+      state: present
+
+  - name: Remove index.html
+    file:
+      path: /var/www/html/index.html
+      state: absent
+
+  - name: copia index.php
+    copy:
+      src: ./index.php
+      dest: /var/www/html/index.php
+      owner: www-data
+      group: www-data
+      mode: '0644'
+      backup: yes
+
+  - name: reinicia apache2
+    service:
+      name: apache2
+      state: reloaded

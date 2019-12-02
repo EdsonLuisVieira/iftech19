@@ -1,0 +1,52 @@
+- name: verificar Docker
+  shell: dpkg -l | grep docker
+  register: verifydocker
+  ignore_errors: True
+
+- name: Instalando docker
+  shell: curl -fsSL https://get.docker.com | bash
+  when: verifydocker.rc != "0"
+
+- name: verificar Compose
+  shell: docker-compose --version
+  register: verifycompose
+  ignore_errors: True
+  
+- name: Instalando Compose
+  shell: curl -L "https://www.github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  become: yes
+  when: verifycompose.rc != "0"
+
+- name: aplicando permissoes no compose Compose
+  file: 
+    path: /usr/local/bin/docker-compose 
+    mode: '755'
+  become: yes
+  when: verifycompose.rc != "0"
+
+- name: link compose
+  file: 
+    src: /usr/local/bin/docker-compose 
+    dest: /usr/bin/docker-compose
+    state: link
+  become: yes
+  when: verifycompose.rc != "0"
+
+- name: permissao do usuario
+  shell: usermod -aG docker {{ USER_SERVICE }}
+  become: yes
+  register: addusergroup
+
+- name: instalando pip
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - python-docker
+      - python-dockerpty
+      - python-dockerpycreds
+  become: yes
+ 
+- name: Instala modulo docker python
+  pip:
+    name: docker-py

@@ -1,0 +1,22 @@
+- name: Deploy dev
+  hosts: api
+  gather_facts: no
+  remote_user: ubuntu
+  vars:
+    USER_SERVICE: ubuntu
+    APP_DIR: /home/{{ USER_SERVICE }}/deploydev/
+    STAGE: deploy-dev
+    REP_URL: ssh://git@IPSERVER:2222/root/042.git
+    ENV_VERSION: development
+    DB_NAME: mongo
+    API_NAME: base-api
+    API_PORT: 3333
+    SERVER_API_IP: 0.0.0.0
+    EXTERNAL_API_PORT: 8787
+    VERSION_API: 0.2
+  roles:
+    - provision
+    - deploy
+  tags: 
+    - 'dev'
+

@@ -1,0 +1,21 @@
+version: '3.3'
+
+services:
+  {{ DB_NAME }}:
+    image: mongo
+    container_name: {{ DB_NAME }}
+    restart: always
+
+  {{ API_NAME  }}:
+    container_name: {{ API_NAME  }}
+    depends_on:
+      - {{ DB_NAME  }}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: {{ API_NAME }}
+    restart: always
+    ports:
+      - {{ EXTERNAL_API_PORT  }}:{{ API_PORT  }}
+
+

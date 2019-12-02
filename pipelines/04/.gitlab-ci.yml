@@ -1,0 +1,62 @@
+image: node:11
+
+variables:
+  ACCEPT_EULA: Y
+  SA_PASSWORD: Testing123!
+
+services:
+  - name: mongo
+    alias: mongo
+
+stages:
+  - test
+#  - sonar
+  - build
+  - deploy
+
+test-unitario-front:stable:
+  stage: test
+  script:
+    - cd ./api
+    - mkdir env && mv vars/env-dev env/.env.development
+    - npm i nodemon -g
+    - npm i && npm start ; npm run seeds ; npm test
+
+#sonarqube:publish:
+#   stage: sonar
+#   image: ciricihq/gitlab-sonar-scanner
+#   variables:
+#     SONAR_URL: "$SONAR_URL_PUB"
+#     SONAR_ANALYSIS_MODE: publish
+#   script:
+#     - gitlab-sonar-scanner -X
+
+build-package:
+  stage: build
+  script:
+    - cd ./api
+    - npm i
+    - npm i nodemon -g
+    - npm i babel-cli -g && npm run build
+  artifacts:
+    paths:
+      - ./api/dist/
+
+deploy_dev:
+  stage: deploy
+  image: edsonlvalmeida/ansible:1.0
+  script:
+    - echo "$private_key"
+    - echo "$private_key" > key && chmod 400 key
+    - eval "$(ssh-agent -s)"
+    - ssh-add key
+    - export ANSIBLE_HOST_KEY_CHECKING=False
+    - ansible-playbook -i hosts playbook.yml --tags "dev"
+  environment:
+    name: deploy-dev
+    url: "$ENV_PROD"
+  when: manual
+  only:
+  - tags
+  - master
+

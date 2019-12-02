@@ -1,0 +1,7 @@
+DB_HOST=<mongodb://mongo>
+DB_NAME=mongo
+
+API_HOST=0.0.0.0
+API_PORT=3333
+
+SECRET_KEY_TOKEN=iishdiuh&$ikjhbds5854
